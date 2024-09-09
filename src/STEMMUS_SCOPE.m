@@ -25,7 +25,7 @@ end
 
 % set CFG to a path if it is not defined
 if exist('CFG', 'var') == 0
-    CFG = '../config_file_crib.txt';
+    CFG = '/data/shared/STEMMUS_SCOPE_Reading/config_file_crib-Glanerbeek.txt';
 end
 
 % set runMode to "full" if it is not defined
@@ -246,9 +246,18 @@ if strcmp(bmiMode, "initialize") || strcmp(runMode, "full")
     [Output_dir, fnames] = io.create_output_files_binary(parameter_file, SiteProperties.sitename, path_of_code, path_input, path_output, spectral, options);
 
     %% Initialize Temperature, Matric potential and soil air pressure.
+    ModelType = 'Kosugi';
     % Define soil variables for StartInit
-    VanGenuchten = init.setVanGenuchtenParameters(SoilProperties);
-    SoilVariables = init.defineSoilVariables(InitialValues, SoilProperties, VanGenuchten);
+    if strcmp(ModelType, 'VanGenuchten')
+        VanGenuchten = init.setVanGenuchtenParameters(SoilProperties);
+        
+    elseif strcmp(ModelType, 'Kosugi')
+        Kosugi = init.setKosugiParameters(SoilProperties);
+        
+    else
+        error('Invalid model type. Choose either "VanGenuchten" or "Kosugi".');
+    end
+    SoilVariables = init.defineSoilVariables(InitialValues, SoilProperties, VanGenuchten, Kosugi);
 
     % Add initial soil moisture and soil temperature
     [SoilInitialValues, BtmX, BtmT, Tss] = io.loadSoilInitialValues(InputPath, TimeProperties, SoilProperties, ForcingData, ModelSettings);
