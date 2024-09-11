@@ -1,6 +1,6 @@
 # Contribute you changes to STEMMUS-SCOPE on CRIB
 ## Download the source code of STEMMUS-SCOPE model. 
-Log in to CRIB, and run this code on terminal to download the source code from GitHub to the current directory on CRIB.
+Log in to CRIB, and run this command on terminal to download the source code from GitHub to the current directory on CRIB.
 ```
 git clone git@github.com:EcoExtreML/STEMMUS_SCOPE.git
 ```
@@ -12,7 +12,7 @@ git config --global user.emial "your email address"
 ```
 ## Commit your changes
 1. Check status 
-Run this statement when you want to check the git status, and all modifications that have not yet been recorded by git will be displayed.
+Run this command when you want to check the git status, and all modifications that have not yet been recorded by git will be displayed.
 ```
 git status
 ```
@@ -44,8 +44,8 @@ git commit -m "Add kosugi options into STEMMUS-SCOPE"
 8. Uploading your changes to GitHub repository<br>
 Use `-u` to set the remote upstream when creating a new branch.
 ```
-git push -u origin kosugi # for first time
-git push # 
+git push -u origin kosugi
+git push
 ```
 
 
