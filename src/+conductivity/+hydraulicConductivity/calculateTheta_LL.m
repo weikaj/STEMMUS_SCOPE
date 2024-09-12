@@ -1,4 +1,4 @@
-function theta_ll = calculateTheta_LL(theta_uu, theta_ii, theta_m, gamma_hh, SoilVariables, VanGenuchten, ModelSettings)
+function theta_ll = calculateTheta_LL(theta_uu, theta_ii, theta_m, gamma_hh, SoilVariables, VanGenuchten, ModelSettings, Kosugi, options)
 
     % load Constants
     Constants = io.define_constants();
@@ -13,7 +13,9 @@ function theta_ll = calculateTheta_LL(theta_uu, theta_ii, theta_m, gamma_hh, Soi
     alpha = VanGenuchten.Alpha;
     n = VanGenuchten.n;
     m = VanGenuchten.m;
-
+    mu = Kosugi.mu;
+    sigma = Kosugi.sigma;
+    
     heatTerm = hh + hh_frez;
 
     % calculate theta_ll
@@ -24,7 +26,7 @@ function theta_ll = calculateTheta_LL(theta_uu, theta_ii, theta_m, gamma_hh, Soi
                 theta_ll = theta_s;
             elseif ModelSettings.Thmrlefc
                 subRoutine = 0;
-                theta_ll = conductivity.hydraulicConductivity.calculateTheta(subRoutine, theta_m, heatTerm, gamma_hh, theta_s, theta_r, lamda, phi_s, alpha, n, m);
+                theta_ll = conductivity.hydraulicConductivity.calculateTheta(subRoutine, theta_m, heatTerm, gamma_hh, theta_s, theta_r, lamda, phi_s, alpha, n, m, mu, sigma, options);
             end
         else
             if hh >= -1e-6 && TT + 273.15 > (273.15 + 1)
@@ -33,7 +35,7 @@ function theta_ll = calculateTheta_LL(theta_uu, theta_ii, theta_m, gamma_hh, Soi
                 theta_ll = theta_r;
             elseif TT + 273.15 > (273.15 + 1)
                 subRoutine = 2;
-                theta_ll = conductivity.hydraulicConductivity.calculateTheta(subRoutine, theta_m, heatTerm, gamma_hh, theta_s, theta_r, lamda, phi_s, alpha, n, m);
+                theta_ll = conductivity.hydraulicConductivity.calculateTheta(subRoutine, theta_m, heatTerm, gamma_hh, theta_s, theta_r, lamda, phi_s, alpha, n, m, mu, sigma, options);
             else
                 theta_ll = theta_uu - theta_ii * Constants.RHOI / Constants.RHOL;
             end
@@ -44,7 +46,7 @@ function theta_ll = calculateTheta_LL(theta_uu, theta_ii, theta_m, gamma_hh, Soi
     else
         if hh >= phi_s
             subRoutine = 1;
-            theta_ll = conductivity.hydraulicConductivity.calculateTheta(subRoutine, theta_m, heatTerm, gamma_hh, theta_s, theta_r, lamda, phi_s, alpha, n, m);
+            theta_ll = conductivity.hydraulicConductivity.calculateTheta(subRoutine, theta_m, heatTerm, gamma_hh, theta_s, theta_r, lamda, phi_s, alpha, n, m, mu, sigma, options);
         elseif hh <= -1e7
             theta_ll = theta_r;
         end
