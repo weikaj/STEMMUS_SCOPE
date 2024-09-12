@@ -1,4 +1,4 @@
-function [SoilVariables, VanGenuchten] = applySoilHeteroEffect(SoilProperties, SoilVariables, VanGenuchten, ModelSettings)
+function [SoilVariables, VanGenuchten, Kosugi] = applySoilHeteroEffect(SoilProperties, SoilVariables, VanGenuchten, ModelSettings, Kosugi, options)
 
     initX = SoilVariables.InitialValues.initX;
     initND = SoilVariables.InitialValues.initND;
@@ -25,7 +25,8 @@ function [SoilVariables, VanGenuchten] = applySoilHeteroEffect(SoilProperties, S
     if ~Eqlspace
         j = ModelSettings.J;
         for i = 1:length(initX)
-            SoilVariables.InitialValues.initH(i) = init.calcInitH(VanGenuchten.Theta_s(j), VanGenuchten.Theta_r(j), initX(i), VanGenuchten.n(j), VanGenuchten.m(j), VanGenuchten.Alpha(j));
+            SoilVariables.InitialValues.initH(i) = init.calcInitH(VanGenuchten.Theta_s(j), VanGenuchten.Theta_r(j), initX(i), VanGenuchten.n(j), VanGenuchten.m(j), VanGenuchten.Alpha(j), Kosugi.mu(j), Kosugi.sigma(j),options);
+
         end
         Dmark = [];
         for i = 1:ModelSettings.NL
@@ -33,14 +34,14 @@ function [SoilVariables, VanGenuchten] = applySoilHeteroEffect(SoilProperties, S
             InitLnth(i) = ModelSettings.Tot_Depth - SoilConstants.Elmn_Lnth;
             for subRoutine = 5:-1:1
                 if abs(InitLnth(i) - initND(subRoutine)) < 1e-10
-                    [SoilVariables, VanGenuchten, initH] = init.soilHeteroSubroutine(subRoutine, SoilProperties, SoilVariables, VanGenuchten, ModelSettings, ImpedF, Dmark, i);
+                    [SoilVariables, VanGenuchten, initH, Kosugi] = init.soilHeteroSubroutine(subRoutine, SoilProperties, SoilVariables, VanGenuchten, ModelSettings, ImpedF, Dmark, i, Kosugi, options);
                     SoilVariables.InitialValues.initH = initH;
                     Dmark = i + 2;
                 end
             end
             if abs(InitLnth(i)) < 1e-10
                 subRoutine = 0;
-                [SoilVariables, VanGenuchten, initH] = init.soilHeteroSubroutine(subRoutine, SoilProperties, SoilVariables, VanGenuchten, ModelSettings, ImpedF, Dmark, i);
+                [SoilVariables, VanGenuchten, initH, Kosugi] = init.soilHeteroSubroutine(subRoutine, SoilProperties, SoilVariables, VanGenuchten, ModelSettings, ImpedF, Dmark, i, Kosugi, options);
                 SoilVariables.InitialValues.initH = initH;
             end
         end
