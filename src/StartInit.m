@@ -1,4 +1,4 @@
-function [SoilVariables, VanGenuchten, ThermalConductivity] = StartInit(SoilVariables, SoilProperties, VanGenuchten, ModelSettings)
+function [SoilVariables, VanGenuchten, ThermalConductivity, Kosugi] = StartInit(SoilVariables, SoilProperties, VanGenuchten, ModelSettings, Kosugi, options)
 
     Ksh = repelem(18 / (3600 * 24), 6);
     BtmKsh = Ksh(6);
@@ -10,7 +10,7 @@ function [SoilVariables, VanGenuchten, ThermalConductivity] = StartInit(SoilVari
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%% Considering soil hetero effect modify date: 20170103 %%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    [SoilVariables, VanGenuchten] = init.applySoilHeteroEffect(SoilProperties, SoilVariables, VanGenuchten, ModelSettings);
+    [SoilVariables, VanGenuchten, Kosugi] = init.applySoilHeteroEffect(SoilProperties, SoilVariables, VanGenuchten, ModelSettings,Kosugi, options);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%% Considering soil hetero effect modify date: 20170103 %%%%%%%%%%%%
@@ -25,7 +25,7 @@ function [SoilVariables, VanGenuchten, ThermalConductivity] = StartInit(SoilVari
     ThermalConductivity = init.calculateInitialThermal(SoilVariables, VanGenuchten, ModelSettings);
 
     % SoilVariables will be updated in UpdateSoilWaterContent
-    SoilVariables = UpdateSoilWaterContent(KIT, LatentHeatOfFreezing, SoilVariables, VanGenuchten, ModelSettings);
+    SoilVariables = UpdateSoilWaterContent(KIT, LatentHeatOfFreezing, SoilVariables, VanGenuchten, ModelSettings, Kosugi, options);
 
     Theta_L = SoilVariables.Theta_L;
     Theta_I = SoilVariables.Theta_I;
