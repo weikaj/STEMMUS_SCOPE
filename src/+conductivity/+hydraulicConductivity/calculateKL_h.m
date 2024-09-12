@@ -1,4 +1,4 @@
-function kl_h = calculateKL_h(mu_w, se, Ks, m)
+function kl_h = calculateKL_h(mu_w, se, Ks, m, sigma, options)
 
     % load Constants
     Constants = io.define_constants();
@@ -8,7 +8,14 @@ function kl_h = calculateKL_h(mu_w, se, Ks, m)
     if se == 0
         kl_h = 0;
     else
-        kl_h = CKT * Ks * (se^(0.5)) * (1 - (1 - se^(1 / m))^m)^2;
+        if strcmp(options.modelType, 'VanGenuchten')
+            kl_h = CKT * Ks * (se^(0.5)) * (1 - (1 - se^(1 / m))^m)^2;
+        elseif strcmp(options.modelType, 'Kosugi')
+            
+            kl_h = CKT * Ks * (se^(0.5)) * 0.5 * erfc((erfcinv(2 * Se) + sigma / sqrt(2)))^2;
+        else
+            error('Invalid model type. Choose either "VanGenuchten" or "Kosugi".');
+        end
     end
     if kl_h <= 1E-20
         kl_h = 1E-20;
