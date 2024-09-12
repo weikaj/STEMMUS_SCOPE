@@ -1,4 +1,4 @@
-function k_g = calculateGasConductivity(InitialValues, TransportCoefficient, VanGenuchten, SoilVariables, ModelSettings)
+function k_g = calculateGasConductivity(InitialValues, TransportCoefficient, VanGenuchten, SoilVariables, ModelSettings, Kosugi, options)
     %{
         This is to calculate the intrinsic permeability of soil for gas flow.
         Scanlon, B. R. (2000), Soil gas movement in unsaturated systems, in
@@ -15,18 +15,31 @@ function k_g = calculateGasConductivity(InitialValues, TransportCoefficient, Van
 
     k_g = InitialValues.k_g;
     m = VanGenuchten.m;
-
+    sigma = Kosugi.sigma; 
+    
     for i = 1:ModelSettings.NL
         for j = 1:ModelSettings.nD
             MN = i + j - 1;
             Sa = SoilVariables.Theta_g(i, j) / SoilVariables.POR(i);
             if ModelSettings.SWCC == 1
-                k_g(i, j) = SoilVariables.Ks(i) * TransportCoefficient.MU_W(i, j) * (1 - Sa^0.5) * (1 - (1 - (1 - Sa^(1 / m(i))))^m(i))^2 / (Constants.g * Constants.RHOL);
+                if strcmp(options.modelType, 'VanGenuchten')
+                    k_g(i, j) = SoilVariables.Ks(i) * TransportCoefficient.MU_W(i, j) * (1 - Sa^0.5) * (1 - (1 - (1 - Sa^(1 / m(i))))^m(i))^2 / (Constants.g * Constants.RHOL);
+                elseif strcmp(options.modelType, 'Kosugi')   
+                    k_g(i, j) = SoilVariables.Ks(i) * TransportCoefficient.MU_W(i, j) * (1-Sa^0.5)  * 0.5 * (1- erfc((erfcinv(2 * Sa) + sigma(i) / sqrt(2))))^2 / (Constants.g * Constants.RHOL);
+                else
+                    error('Invalid model type. Choose either "VanGenuchten" or "Kosugi".');
+                end    
             else
                 k_g(i, j) = 0;
             end
             if ModelSettings.Soilairefc == 1
-                k_g(i, j) = (SoilVariables.Ks(i) * TransportCoefficient.MU_W(i, j) * (1 - Sa^0.5) * (1 - (1 - (1 - Sa^(1 / m(i))))^m(i))^2 / (Constants.g * Constants.RHOL)) * 10^(-1 * SoilVariables.Imped(MN) * SoilVariables.Ratio_ice(i, j));
+                if strcmp(options.modelType, 'VanGenuchten')
+                    k_g(i, j) = (SoilVariables.Ks(i) * TransportCoefficient.MU_W(i, j) * (1 - Sa^0.5) * (1 - (1 - (1 - Sa^(1 / m(i))))^m(i))^2 / (Constants.g * Constants.RHOL)) * 10^(-1 * SoilVariables.Imped(MN) * SoilVariables.Ratio_ice(i, j));
+                elseif strcmp(options.modelType, 'Kosugi') 
+                    k_g(i, j) = (SoilVariables.Ks(i) * TransportCoefficient.MU_W(i, j) * (1-Sa^0.5) * 0.5 * (1- erfc((erfcinv(2 * Sa) + sigma(i) / sqrt(2))))^2 / (Constants.g * Constants.RHOL)) * 10^(-1 * SoilVariables.Imped(MN) * SoilVariables.Ratio_ice(i, j));
+                else
+                    error('Invalid model type. Choose either "VanGenuchten" or "Kosugi".');
+                end    
             else
                 k_g(i, j) = 0;
             end
