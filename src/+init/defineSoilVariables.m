@@ -1,4 +1,4 @@
-function SoilVariables = defineSoilVariables(InitialValues, SoilProperties, VanGenuchten)
+function SoilVariables = defineSoilVariables(InitialValues, SoilProperties, VanGenuchten, Kosugi, options)
     %{
         Create a SoilVariables structure and define some variables.
         SoilVariables is input for initializing Temperature, Matric potential
@@ -21,10 +21,17 @@ function SoilVariables = defineSoilVariables(InitialValues, SoilProperties, VanG
     end
 
     % Calculate some of SoilVariables
-    SoilVariables.XK = VanGenuchten.Theta_r + 0.02; % 0.11 This is for silt loam; For sand XK=0.025
-    SoilVariables.XWILT = equations.van_genuchten(VanGenuchten.Theta_s, VanGenuchten.Theta_r, VanGenuchten.Alpha, -1.5e4, VanGenuchten.n, VanGenuchten.m);
-    SoilVariables.XCAP = equations.van_genuchten(VanGenuchten.Theta_s, VanGenuchten.Theta_r, VanGenuchten.Alpha, -336, VanGenuchten.n, VanGenuchten.m);
-
+    if strcmp(options.modelType, 'VanGenuchten')
+        SoilVariables.XK = VanGenuchten.Theta_r + 0.02; % 0.11 This is for silt loam; For sand XK=0.025
+        SoilVariables.XWILT = equations.van_genuchten(VanGenuchten.Theta_s, VanGenuchten.Theta_r, VanGenuchten.Alpha, -1.5e4, VanGenuchten.n, VanGenuchten.m);
+        SoilVariables.XCAP = equations.van_genuchten(VanGenuchten.Theta_s, VanGenuchten.Theta_r, VanGenuchten.Alpha, -336, VanGenuchten.n, VanGenuchten.m);
+    elseif strcmp(options.modelType, 'Kosugi')
+        SoilVariables.XK = Kosugi.Theta_r + 0.02; % 0.11 This is for silt loam; For sand XK=0.025
+        SoilVariables.XWILT = equations.kosugi(Kosugi.Theta_s, Kosugi.Theta_r, Kosugi.mu, -1.5e4, Kosugi.sigma);
+        SoilVariables.XCAP = equations.kosugi(Kosugi.Theta_s, Kosugi.Theta_r, Kosugi.mu, -336, Kosugi.sigma);
+    else
+        error('Invalid model type. Choose either "VanGenuchten" or "Kosugi".');
+    end
     SoilVariables.VPERSOC = equations.calc_msoc_fraction(SoilProperties.MSOC); % fraction of soil organic matter
     SoilVariables.FOSL = 1 - SoilProperties.FOC - SoilProperties.FOS - SoilVariables.VPERSOC;
 
