@@ -247,17 +247,18 @@ if strcmp(bmiMode, "initialize") || strcmp(runMode, "full")
 
     %% Initialize Temperature, Matric potential and soil air pressure.
     ModelType = 'Kosugi';
+    options.modelType = ModelType;
     % Define soil variables for StartInit
-    if strcmp(ModelType, 'VanGenuchten')
-        VanGenuchten = init.setVanGenuchtenParameters(SoilProperties);
+    
+    VanGenuchten = init.setVanGenuchtenParameters(SoilProperties);
         
-    elseif strcmp(ModelType, 'Kosugi')
+    if strcmp(options.modelType, 'Kosugi')
         Kosugi = init.setKosugiParameters(SoilProperties);
         
     else
         error('Invalid model type. Choose either "VanGenuchten" or "Kosugi".');
     end
-    SoilVariables = init.defineSoilVariables(InitialValues, SoilProperties, VanGenuchten, Kosugi);
+    SoilVariables = init.defineSoilVariables(InitialValues, SoilProperties, VanGenuchten, Kosugi, options);
 
     % Add initial soil moisture and soil temperature
     [SoilInitialValues, BtmX, BtmT, Tss] = io.loadSoilInitialValues(InputPath, TimeProperties, SoilProperties, ForcingData, ModelSettings);
@@ -267,8 +268,8 @@ if strcmp(bmiMode, "initialize") || strcmp(runMode, "full")
     SoilVariables.Tss = Tss;
 
     % Run StartInit
-    [SoilVariables, VanGenuchten, ThermalConductivity] = StartInit(SoilVariables, SoilProperties, VanGenuchten, ModelSettings);
-
+    [SoilVariables, VanGenuchten, ThermalConductivity, Kosugi] = StartInit(SoilVariables, SoilProperties, VanGenuchten, ModelSettings, Kosugi, options);
+    
     % Set SoilVariables that are used in the loop
     T = SoilVariables.T;
     h = SoilVariables.h;
@@ -507,7 +508,7 @@ if strcmp(bmiMode, 'update') || strcmp(runMode, 'full')
                         [iter, fluxes, rad, thermal, profiles, soil, RWU, frac, WaterStressFactor, WaterPotential] ...
                             = ebal(iter, options, spectral, rad, gap,  ...
                                    leafopt, angles, meteo, soil, canopy, leafbio, xyt, k, profiles, Delt_t, ...
-                                   Rl, SoilVariables, VanGenuchten, InitialValues, ModelSettings, GroundwaterSettings);
+                                   Rl, SoilVariables, VanGenuchten, InitialValues, ModelSettings, GroundwaterSettings, Kosugi);
                         if options.calc_fluor
                             if options.calc_vert_profiles
                                 [rad, profiles] = RTMf(spectral, rad, soil, leafopt, canopy, gap, angles, profiles);
@@ -637,7 +638,7 @@ if strcmp(bmiMode, 'update') || strcmp(runMode, 'full')
             SoilVariables.TT_CRIT = TT_CRIT;
             SoilVariables.hh_frez = hh_frez;
 
-            SoilVariables = UpdateSoilWaterContent(KIT, L_f, SoilVariables, VanGenuchten, ModelSettings);
+            SoilVariables = UpdateSoilWaterContent(KIT, L_f, SoilVariables, VanGenuchten, ModelSettings, Kosugi, options);
 
             % Reset KL_T here. CondL_T script is replaced by this line
             % see issue 181, item 4
@@ -655,7 +656,7 @@ if strcmp(bmiMode, 'update') || strcmp(runMode, 'full')
 
             ThermalConductivityCapacity = conductivity.calculateThermalConductivityCapacity(InitialValues, ThermalConductivity, SoilVariables, VanGenuchten, ModelSettings, DRHOVT, L, RHOV);
 
-            k_g = conductivity.calculateGasConductivity(InitialValues, TransportCoefficient, VanGenuchten, SoilVariables, ModelSettings);
+            k_g = conductivity.calculateGasConductivity(InitialValues, TransportCoefficient, VanGenuchten, SoilVariables, ModelSettings,Kosugi, options);
 
             VaporVariables = conductivity.calculateVaporVariables(InitialValues, SoilVariables, VanGenuchten, ModelSettings, ThermalConductivityCapacity, SoilVariables.TT);
 
@@ -728,7 +729,7 @@ if strcmp(bmiMode, 'update') || strcmp(runMode, 'full')
         % updates inputs for UpdateSoilWaterContent
         SoilVariables.TT_CRIT = TT_CRIT;
         SoilVariables.hh_frez = hh_frez;
-        SoilVariables = UpdateSoilWaterContent(KIT, L_f, SoilVariables, VanGenuchten, ModelSettings);
+        SoilVariables = UpdateSoilWaterContent(KIT, L_f, SoilVariables, VanGenuchten, ModelSettings, Kosugi, options);
 
         if IRPT1 == 0 && IRPT2 == 0
             if KT        % In case last time step is not convergent and needs to be repeated.
