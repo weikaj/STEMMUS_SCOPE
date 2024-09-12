@@ -21,7 +21,7 @@ function [SiteProperties, SoilProperties, TimeProperties] = prepareInputData(Inp
     TimeProperties = load(forcing_global_path, 'DELT', 'Dur_tot');
     SiteProperties = load(forcing_global_path, 'latitude', 'longitude', 'reference_height', 'canopy_height', 'sitename');
 
-    SoilProperties = load(soil_global_path, 'SaturatedK', 'SaturatedMC', 'ResidualMC', 'Coefficient_n', 'Coefficient_Alpha', ...
+    SoilProperties = load(soil_global_path, 'SaturatedK', 'SaturatedMC', 'ResidualMC', 'Coefficient_n', 'Coefficient_Alpha','Coefficient_mu','Coefficient_sigma', ...
                           'porosity', 'FOC', 'FOS', 'MSOC', 'Coef_Lamda', 'fieldMC', 'fmax', 'theta_s0', 'Ks0');
 
     % Convert the int vectors back to strings
