@@ -1,10 +1,12 @@
-function dtheta_llh = calculateDTheta_LLh(dtheta_uuh, theta_m, theta_uu, theta_ll, gamma_hh, SoilVariables, VanGenuchten, ModelSettings)
+function dtheta_llh = calculateDTheta_LLh(dtheta_uuh, theta_m, theta_uu, theta_ll, gamma_hh, SoilVariables, VanGenuchten, ModelSettings, Kosugi, options)
     theta_s = VanGenuchten.Theta_s;
     theta_r = VanGenuchten.Theta_r;
     alpha = VanGenuchten.Alpha;
     n = VanGenuchten.n;
     m = VanGenuchten.m;
-
+    mu = Kosugi.mu;
+    sigma = Kosugi.sigma;
+    
     theta_u = SoilVariables.Theta_U;
     hh = SoilVariables.hh;
     h = SoilVariables.h;
@@ -24,14 +26,14 @@ function dtheta_llh = calculateDTheta_LLh(dtheta_uuh, theta_m, theta_uu, theta_l
                     dtheta_llh = 0;
                 else
                     subRoutine = 0;
-                    dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, hh, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m);
+                    dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, hh, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m, mu, sigma, options);
                 end
             elseif abs(hh - h) < 1e-3
                 subRoutine = 1;
-                dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, hh, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m);
+                dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, hh, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m, mu, sigma, options);
             else
                 subRoutine = 3;
-                dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, hh, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m);
+                dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, hh, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m, mu, sigma, options);
             end
         elseif hh <= -1e7 || theta_ll <= 0.06
             dtheta_llh = 0;
@@ -43,13 +45,13 @@ function dtheta_llh = calculateDTheta_LLh(dtheta_uuh, theta_m, theta_uu, theta_l
             dtheta_llh = 0;
         elseif ModelSettings.Thmrlefc
             subRoutine = 4;
-            dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, heatTerm, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m);
+            dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, heatTerm, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m, mu, sigma, options);
         elseif abs(hh - h) < 1e-3
             subRoutine = 5;
-            dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, heatTerm, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m);
+            dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, heatTerm, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m, mu, sigma, options);
         else
             subRoutine = 2;
-            dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, heatTerm, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m);
+            dtheta_llh = conductivity.hydraulicConductivity.calculateDTheta(subRoutine, heatTerm, theta_s, theta_r, theta_m, gamma_hh, theta_ll, theta_l, theta_uu, theta_u, hh, h, hh_frez, h_frez, phi_s, lamda, alpha, n, m, mu, sigma, options);
         end
     end
 end
