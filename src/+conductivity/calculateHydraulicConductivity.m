@@ -1,4 +1,4 @@
-function SoilVariables = calculateHydraulicConductivity(SoilVariables, VanGenuchten, KIT, L_f, ModelSettings)
+function SoilVariables = calculateHydraulicConductivity(SoilVariables, VanGenuchten, KIT, L_f, ModelSettings, Kosugi, options)
     %{
         This is to calculate the hydraulic conductivity of soil, based on
         hydraulic conductivity models (like VG and others).
@@ -52,7 +52,7 @@ function SoilVariables = calculateHydraulicConductivity(SoilVariables, VanGenuch
     end
 
     for i = 1:ModelSettings.NL
-        % slice vectors
+        % slice vectors VG van genuchten
         VG = sliceVector(VanGenuchten, ModelSettings.NL, i);
 
         for j = 1:ModelSettings.nD
@@ -75,8 +75,8 @@ function SoilVariables = calculateHydraulicConductivity(SoilVariables, VanGenuch
             SV.hh_frez = hh_frez;
 
             Gamma_hh = conductivity.hydraulicConductivity.calculateGamma_hh(SV.hh);
-            Theta_m = conductivity.hydraulicConductivity.calculateTheta_m(Gamma_hh, VG, SV.POR);
-            Theta_UU = conductivity.hydraulicConductivity.calculateTheta_UU(Theta_m, Gamma_hh, SV, VG, ModelSettings);
+            Theta_m = conductivity.hydraulicConductivity.calculateTheta_m(Gamma_hh, VG, SV.POR, Kosugi, options);
+            Theta_UU = conductivity.hydraulicConductivity.calculateTheta_UU(Theta_m, Gamma_hh, SV, VG, ModelSettings, Kosugi, options);
 
             % circular calculation of Theta_II! See issue 181, item 3
             % Theta_II is soil ice content,
@@ -84,11 +84,11 @@ function SoilVariables = calculateHydraulicConductivity(SoilVariables, VanGenuch
             % Theta_UU is the total water content before soil freezing. The
             % 'Theta_UU' is set as saturation.
             Theta_II = conductivity.hydraulicConductivity.calculateTheta_II(SV.TT, SV.XCAP, SV.hh, SV.Theta_II, ModelSettings);
-            Theta_LL = conductivity.hydraulicConductivity.calculateTheta_LL(Theta_UU, Theta_II, Theta_m, Gamma_hh, SV, VG, ModelSettings);
+            Theta_LL = conductivity.hydraulicConductivity.calculateTheta_LL(Theta_UU, Theta_II, Theta_m, Gamma_hh, SV, VG, ModelSettings, Kosugi, options);
             Theta_II = (Theta_UU - Theta_LL) * Constants.RHOL / Constants.RHOI;  % ice water contentTheta_II
 
-            DTheta_UUh = conductivity.hydraulicConductivity.calculateDTheta_UUh(Theta_UU, Theta_m, Theta_LL, Gamma_hh, SV, VG, ModelSettings);
-            DTheta_LLh = conductivity.hydraulicConductivity.calculateDTheta_LLh(DTheta_UUh, Theta_m, Theta_UU, Theta_LL, Gamma_hh, SV, VG, ModelSettings);
+            DTheta_UUh = conductivity.hydraulicConductivity.calculateDTheta_UUh(Theta_UU, Theta_m, Theta_LL, Gamma_hh, SV, VG, ModelSettings, Kosugi, options);
+            DTheta_LLh = conductivity.hydraulicConductivity.calculateDTheta_LLh(DTheta_UUh, Theta_m, Theta_UU, Theta_LL, Gamma_hh, SV, VG, ModelSettings, Kosugi, options);
             Se = conductivity.hydraulicConductivity.calculateSe(Theta_LL, Gamma_hh, SV, ModelSettings);
 
             % Ratio_ice used in Condg_k_g.m
@@ -107,7 +107,7 @@ function SoilVariables = calculateHydraulicConductivity(SoilVariables, VanGenuch
                     MU_W = Constants.MU_W0 * exp(Constants.MU1 / (8.31441 * (SV.TT + 133.3)));
                 end
 
-                KL_h = conductivity.hydraulicConductivity.calculateKL_h(MU_W, Se, SV.Ks, VG.m);
+                KL_h = conductivity.hydraulicConductivity.calculateKL_h(MU_W, Se, SV.Ks, VG.m, Kosugi.sigma, options);
 
                 if Gamma_hh ~= 1
                     KfL_h = KL_h * 10^(-1 * SV.Imped * Ratio_ice);  % hydraulic conductivity for freezing soil
